@@ -2,8 +2,10 @@ FROM richarvey/nginx-php-fpm:3.1.6
 
 WORKDIR /var/www/html
 
-# Set Webroot to Laravel's public directory
+# Set Webroot to Laravel's public directory and enable Laravel Nginx routing rules
 ENV WEBROOT=/var/www/html/public
+ENV LARAVEL=true
+ENV LERAVEL=true
 ENV PHP_ERRORS_STDERR=1
 ENV ERRORS=0
 ENV RUN_SCRIPTS=1
@@ -20,7 +22,7 @@ RUN composer install \
     --optimize-autoloader \
     --no-interaction
 
-# Explicitly create Laravel storage & cache subdirectories (avoiding shell brace expansion issues)
+# Explicitly create Laravel storage & cache subdirectories
 RUN mkdir -p storage/framework/cache/data \
     && mkdir -p storage/framework/sessions \
     && mkdir -p storage/framework/views \
