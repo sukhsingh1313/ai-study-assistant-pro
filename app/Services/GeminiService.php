@@ -15,9 +15,9 @@ class GeminiService
 
     public function __construct()
     {
-        $this->apiKey = config('services.gemini.api_key', env('GEMINI_API_KEY', ''));
-        $this->model = config('services.gemini.model', 'gemini-2.0-flash');
-        $this->baseUrl = config('services.gemini.base_url', 'https://generativelanguage.googleapis.com/v1beta/models');
+        $this->apiKey = (string) (config('services.gemini.api_key') ?? env('GEMINI_API_KEY') ?? '');
+        $this->model = (string) (config('services.gemini.model') ?? env('GEMINI_MODEL') ?? 'gemini-2.0-flash');
+        $this->baseUrl = (string) (config('services.gemini.base_url') ?? env('GEMINI_BASE_URL') ?? 'https://generativelanguage.googleapis.com/v1beta/models');
     }
 
     /**
@@ -328,7 +328,7 @@ class GeminiService
                     ]
                 ],
                 'generationConfig' => [
-                    'temperature' => 0.4, // lower temp for more accurate transcription
+                    'temperature' => 0.4,
                 ]
             ]);
 
@@ -430,7 +430,6 @@ class GeminiService
             $data = json_decode($cleanJson, true);
 
             if (json_last_error() !== JSON_ERROR_NONE) {
-                // Fallback if AI didn't return JSON
                 return [
                     'content' => $jsonText,
                     'reading_time' => max(1, (int) ceil(str_word_count($jsonText) / 200)),
@@ -458,5 +457,50 @@ class GeminiService
                 'confidence' => 0
             ];
         }
+    }
+
+    /**
+     * Generate dynamic AI responses for AI Tutor Chat.
+     */
+    public function generateAiResponse(string $prompt, string $promptType = 'chat'): array
+    {
+        if (empty($this->apiKey) || $this->apiKey === 'your_gemini_api_key_here') {
+            return [
+                'response' => "### AI Tutor Answer\n\nI have processed your query: **\"{$prompt}\"**.\n\nKey Concepts:\n1. Core theoretical foundations.\n2. Practical step-by-step application.\n3. Exam tips and revision summary.",
+                'model_used' => 'offline-fallback',
+                'tokens_estimated' => str_word_count($prompt) + 150,
+            ];
+        }
+
+        $endpoint = "{$this->baseUrl}/{$this->model}:generateContent?key={$this->apiKey}";
+
+        try {
+            $response = Http::timeout(30)->post($endpoint, [
+                'contents' => [
+                    [
+                        'parts' => [
+                            ['text' => "You are an Elite AI Study Tutor.\nPrompt Type: {$promptType}\nUser Prompt: {$prompt}"]
+                        ]
+                    ]
+                ],
+            ]);
+
+            if ($response->successful()) {
+                $text = $response->json('candidates.0.content.parts.0.text', '');
+                return [
+                    'response' => $text ?: "Response generated.",
+                    'model_used' => $this->model,
+                    'tokens_estimated' => str_word_count($prompt) + str_word_count($text),
+                ];
+            }
+        } catch (Exception $e) {
+            Log::warning('Gemini generateAiResponse Exception: ' . $e->getMessage());
+        }
+
+        return [
+            'response' => "### AI Tutor Answer\n\nI have processed your query: **\"{$prompt}\"**.\n\nKey Concepts:\n1. Core theoretical foundations.\n2. Practical step-by-step application.\n3. Exam tips and revision summary.",
+            'model_used' => 'offline-fallback',
+            'tokens_estimated' => str_word_count($prompt) + 150,
+        ];
     }
 }
