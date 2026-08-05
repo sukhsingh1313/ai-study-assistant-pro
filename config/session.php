@@ -4,7 +4,13 @@ use Illuminate\Support\Str;
 
 return [
 
-    'driver' => env('SESSION_DRIVER', 'file'),
+    /*
+    |--------------------------------------------------------------------------
+    | Default Session Driver
+    |--------------------------------------------------------------------------
+    | Set to 'file' to guarantee zero database dependency issues on boot.
+    */
+    'driver' => 'file',
 
     'lifetime' => env('SESSION_LIFETIME', 120),
 
