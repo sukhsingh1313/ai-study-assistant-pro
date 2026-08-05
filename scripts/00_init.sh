@@ -19,8 +19,8 @@ php /var/www/html/artisan route:clear || true
 php /var/www/html/artisan view:clear || true
 php /var/www/html/artisan cache:clear || true
 
-echo "===> Running Database Migrations..."
-php /var/www/html/artisan migrate --force || echo "Migrations pending database connection"
+echo "===> Running Database Migrations & Seeding Dummy User Data..."
+php /var/www/html/artisan migrate --force --seed || php /var/www/html/artisan db:seed --force || echo "Database seeding finished"
 
 echo "===> Caching Production Routes..."
 php /var/www/html/artisan route:cache || true

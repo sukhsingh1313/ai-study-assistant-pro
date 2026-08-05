@@ -10,7 +10,7 @@ class SubjectSeeder extends Seeder
 {
     public function run(): void
     {
-        $user = User::first();
+        $user = User::where('email', 'student@example.com')->first() ?? User::first();
 
         if (!$user) {
             return;
@@ -41,7 +41,10 @@ class SubjectSeeder extends Seeder
         ];
 
         foreach ($subjects as $subject) {
-            Subject::create($subject);
+            Subject::firstOrCreate(
+                ['user_id' => $subject['user_id'], 'code' => $subject['code']],
+                $subject
+            );
         }
     }
 }
