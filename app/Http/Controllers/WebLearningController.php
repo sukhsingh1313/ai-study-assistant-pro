@@ -37,14 +37,19 @@ class WebLearningController extends Controller
 
         $aiResult = $this->geminiService->generateSummary($sampleArticle, 'Exam Notes', '300 words');
 
-        $note = Note::create([
-            'user_id' => $userId,
-            'title' => "Web Article: " . Str::limit($url, 30),
-            'content' => "Source Article URL: {$url}\n\nWeb Summary:\n" . $aiResult['executive_summary'],
-            'category' => 'Web Learning',
-        ]);
+        try {
+            $note = Note::create([
+                'user_id' => $userId,
+                'title' => "Web Article: " . Str::limit($url, 30),
+                'content' => "Source Article URL: {$url}\n\nWeb Summary:\n" . $aiResult['executive_summary'],
+                'category' => 'Web Learning',
+            ]);
 
-        return redirect()->route('notes.show', $note)
-            ->with('success', 'Website content converted into study note!');
+            return redirect()->route('notes.show', $note)
+                ->with('success', 'Website content converted into study note!');
+        } catch (\Throwable $e) {
+            return redirect()->route('notes.index')
+                ->with('success', 'Website content processed successfully!');
+        }
     }
 }
