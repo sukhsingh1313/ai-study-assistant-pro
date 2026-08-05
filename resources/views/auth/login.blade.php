@@ -15,7 +15,7 @@
                     <p class="text-muted fs-7">Sign in to continue to AI Study Assistant</p>
                 </div>
 
-                @if($errors->any())
+                @if(isset($errors) && $errors->any())
                     <div class="alert alert-danger border-0 alert-dismissible fade show mb-4" role="alert">
                         <ul class="mb-0 ps-3">
                             @foreach($errors->all() as $error)

@@ -15,7 +15,7 @@
     </div>
 
     <div class="card card-custom p-4 p-md-5 bg-white border">
-        @if($errors->any())
+        @if(isset($errors) && $errors->any())
             <div class="alert alert-danger border-0 alert-dismissible fade show mb-4" role="alert">
                 <ul class="mb-0 ps-3">
                     @foreach($errors->all() as $error)
