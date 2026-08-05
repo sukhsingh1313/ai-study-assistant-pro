@@ -35,7 +35,8 @@ RUN mkdir -p storage/framework/cache/data \
     && chmod -R 777 storage bootstrap/cache \
     && chown -R nginx:nginx storage bootstrap/cache 2>/dev/null || true
 
-# Make startup scripts executable
-RUN chmod +x /var/www/html/scripts/*.sh 2>/dev/null || true
+# Strip Windows carriage returns and make startup scripts executable
+RUN sed -i 's/\r$//' /var/www/html/scripts/*.sh 2>/dev/null || true \
+    && chmod +x /var/www/html/scripts/*.sh 2>/dev/null || true
 
 EXPOSE 80
