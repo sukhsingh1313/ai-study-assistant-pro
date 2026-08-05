@@ -13,6 +13,10 @@ ENV RUN_SCRIPTS=1
 # Copy application
 COPY . /var/www/html
 
+# Copy custom Nginx configuration to override default site config
+COPY conf/nginx-laravel.conf /etc/nginx/sites-available/default.conf
+COPY conf/nginx-laravel.conf /etc/nginx/sites-enabled/default.conf
+
 # Install PHP dependencies
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
