@@ -20,11 +20,14 @@ RUN composer install \
     --optimize-autoloader \
     --no-interaction
 
-# Laravel permissions
-RUN mkdir -p storage/framework/{cache,sessions,views} \
+# Explicitly create Laravel storage & cache subdirectories (avoiding shell brace expansion issues)
+RUN mkdir -p storage/framework/cache/data \
+    && mkdir -p storage/framework/sessions \
+    && mkdir -p storage/framework/views \
     && mkdir -p storage/logs \
-    && chmod -R 775 storage bootstrap/cache \
-    && chown -R nginx:nginx storage bootstrap/cache
+    && mkdir -p bootstrap/cache \
+    && chmod -R 777 storage bootstrap/cache \
+    && chown -R nginx:nginx storage bootstrap/cache 2>/dev/null || true
 
 # Storage link
 RUN php artisan storage:link || true
