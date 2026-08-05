@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Support\Str;
+
 return [
 
     'default' => env('CACHE_STORE', 'file'),
@@ -18,8 +20,19 @@ return [
             'lock_connection' => null,
         ],
 
+        'redis' => [
+            'driver' => 'redis',
+            'connection' => 'cache',
+            'lock_connection' => 'default',
+        ],
+
+        'array' => [
+            'driver' => 'array',
+            'serialize' => false,
+        ],
+
     ],
 
-    'prefix' => env('CACHE_PREFIX', 'ai_study_assistant_cache_'),
+    'prefix' => env('CACHE_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_cache_'),
 
 ];

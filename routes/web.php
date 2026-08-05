@@ -127,3 +127,20 @@ Route::middleware('auth')->group(function () {
     Route::post('/flashcards/{flashcard}/record-review', [FlashcardController::class, 'recordReview'])->name('flashcards.record-review');
     Route::resource('flashcards', FlashcardController::class)->except(['edit', 'update', 'show']);
 });
+
+Route::get('/health', function () {
+    try {
+        \Illuminate\Support\Facades\DB::connection()->getPdo();
+        $dbStatus = 'connected';
+    } catch (\Throwable $e) {
+        $dbStatus = 'disconnected: ' . $e->getMessage();
+    }
+
+    return response()->json([
+        'status' => 'OK',
+        'timestamp' => now()->toIso8601String(),
+        'environment' => config('app.env'),
+        'database' => $dbStatus,
+    ], 200);
+});
+
