@@ -32,13 +32,13 @@ services:
           property: connectionString
 
       - key: SESSION_DRIVER
-        value: database
+        value: file
 
       - key: QUEUE_CONNECTION
         value: database
 
       - key: CACHE_STORE
-        value: database
+        value: file
 
       - key: GEMINI_API_KEY
         sync: false
