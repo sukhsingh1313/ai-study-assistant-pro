@@ -143,4 +143,13 @@ Route::get('/health', function () {
         'database' => $dbStatus,
     ], 200);
 });
+Route::get('/db-test', function () {
+    return [
+        'DATABASE_URL' => env('DATABASE_URL'),
+        'DB_HOST' => env('DB_HOST'),
+        'DB_DATABASE' => env('DB_DATABASE'),
+        'DB_USERNAME' => env('DB_USERNAME'),
+        'DB_CONNECTION' => env('DB_CONNECTION'),
+    ];
+});
 
