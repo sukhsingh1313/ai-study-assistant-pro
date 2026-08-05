@@ -36,7 +36,7 @@
                     {{ $note->category ?? 'General' }}
                 </span>
             </div>
-            <p class="text-muted mb-0">Created {{ $note->created_at->format('M d, Y') }} • {{ $note->created_at->diffForHumans() }}</p>
+            <p class="text-muted mb-0">Created {{ $note->created_at ? $note->created_at->format('M d, Y') : now()->format('M d, Y') }}</p>
         </div>
 
         <div class="d-flex flex-wrap gap-2">
@@ -99,6 +99,9 @@
                 @csrf
                 <input type="hidden" name="note_id" value="{{ $note->id }}">
                 <input type="hidden" name="content" value="{{ $note->content }}">
+                <input type="hidden" name="total_questions" value="5">
+                <input type="hidden" name="question_type" value="Mixed">
+                <input type="hidden" name="difficulty" value="Medium">
                 <button type="submit" class="btn btn-outline-primary btn-sm">
                     <i class="bi bi-question-square me-1"></i> Generate Practice Quiz
                 </button>
@@ -108,6 +111,7 @@
                 @csrf
                 <input type="hidden" name="note_id" value="{{ $note->id }}">
                 <input type="hidden" name="content" value="{{ $note->content }}">
+                <input type="hidden" name="count" value="10">
                 <button type="submit" class="btn btn-outline-primary btn-sm">
                     <i class="bi bi-card-heading me-1"></i> Generate Flashcards
                 </button>
@@ -122,7 +126,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     const toggleDarkModeBtn = document.getElementById('toggleDarkModeBtn');
     const toggleFocusModeBtn = document.getElementById('toggleFocusModeBtn');
-    const container = document.getElementById('noteReadingContainer');
     const copyShareLinkBtn = document.getElementById('copyShareLinkBtn');
 
     toggleDarkModeBtn.addEventListener('click', function() {
