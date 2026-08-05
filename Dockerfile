@@ -2,6 +2,12 @@ FROM richarvey/nginx-php-fpm:3.1.6
 
 WORKDIR /var/www/html
 
+# Set Webroot to Laravel's public directory
+ENV WEBROOT=/var/www/html/public
+ENV PHP_ERRORS_STDERR=1
+ENV ERRORS=0
+ENV RUN_SCRIPTS=1
+
 # Copy application
 COPY . /var/www/html
 
@@ -36,8 +42,5 @@ RUN php artisan config:cache || true \
 
 # Health endpoint
 RUN echo "OK" > /var/www/html/public/health
-
-# Render port
-ENV PORT=80
 
 EXPOSE 80
