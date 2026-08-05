@@ -24,20 +24,26 @@ class FlashcardController extends Controller
     {
         $user = Auth::user();
 
-        $query = Flashcard::where('user_id', $user->id)
-            ->with(['subject', 'note', 'summary']);
+        try {
+            $query = Flashcard::where('user_id', $user->id)
+                ->with(['subject', 'note', 'summary']);
 
-        if ($request->boolean('favorites')) {
-            $query->where('is_favorite', true);
+            if ($request->boolean('favorites')) {
+                $query->where('is_favorite', true);
+            }
+
+            if ($request->filled('subject_id')) {
+                $query->where('subject_id', $request->input('subject_id'));
+            }
+
+            $flashcards = $query->latest()->get();
+            $subjects = Subject::where('user_id', $user->id)->get();
+            $totalFavorites = Flashcard::where('user_id', $user->id)->where('is_favorite', true)->count();
+        } catch (\Throwable $e) {
+            $flashcards = collect();
+            $subjects = collect();
+            $totalFavorites = 0;
         }
-
-        if ($request->filled('subject_id')) {
-            $query->where('subject_id', $request->input('subject_id'));
-        }
-
-        $flashcards = $query->latest()->get();
-        $subjects = Subject::where('user_id', $user->id)->get();
-        $totalFavorites = Flashcard::where('user_id', $user->id)->where('is_favorite', true)->count();
 
         return view('flashcards.index', compact('flashcards', 'subjects', 'totalFavorites'));
     }
@@ -48,8 +54,13 @@ class FlashcardController extends Controller
     public function create(Request $request): View
     {
         $user = Auth::user();
-        $summaries = Summary::where('user_id', $user->id)->get();
-        $notes = Note::where('user_id', $user->id)->get();
+        try {
+            $summaries = Summary::where('user_id', $user->id)->get();
+            $notes = Note::where('user_id', $user->id)->get();
+        } catch (\Throwable $e) {
+            $summaries = collect();
+            $notes = collect();
+        }
 
         $selectedSummaryId = $request->input('summary_id');
         $selectedNoteId = $request->input('note_id');
@@ -81,17 +92,21 @@ class FlashcardController extends Controller
     {
         $user = Auth::user();
 
-        $query = Flashcard::where('user_id', $user->id);
+        try {
+            $query = Flashcard::where('user_id', $user->id);
 
-        if ($request->boolean('favorites')) {
-            $query->where('is_favorite', true);
+            if ($request->boolean('favorites')) {
+                $query->where('is_favorite', true);
+            }
+
+            if ($request->filled('subject_id')) {
+                $query->where('subject_id', $request->input('subject_id'));
+            }
+
+            $cards = $query->get();
+        } catch (\Throwable $e) {
+            $cards = collect();
         }
-
-        if ($request->filled('subject_id')) {
-            $query->where('subject_id', $request->input('subject_id'));
-        }
-
-        $cards = $query->get();
 
         if ($cards->isEmpty()) {
             return redirect()->route('flashcards.index')

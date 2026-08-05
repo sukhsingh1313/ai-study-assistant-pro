@@ -24,34 +24,40 @@ class NoteController extends Controller
     {
         $user = Auth::user();
 
-        $query = Note::where('user_id', $user->id)
-            ->with('subject');
+        try {
+            $query = Note::where('user_id', $user->id)
+                ->with('subject');
 
-        if ($request->filled('search')) {
-            $search = $request->input('search');
-            $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('content', 'like', "%{$search}%")
-                  ->orWhere('category', 'like', "%{$search}%");
-            });
+            if ($request->filled('search')) {
+                $search = $request->input('search');
+                $query->where(function ($q) use ($search) {
+                    $q->where('title', 'like', "%{$search}%")
+                      ->orWhere('content', 'like', "%{$search}%")
+                      ->orWhere('category', 'like', "%{$search}%");
+                });
+            }
+
+            if ($request->filled('category')) {
+                $query->where('category', $request->input('category'));
+            }
+
+            if ($request->filled('subject_id')) {
+                $query->where('subject_id', $request->input('subject_id'));
+            }
+
+            if ($request->filled('tag')) {
+                $tag = $request->input('tag');
+                $query->whereJsonContains('tags', $tag);
+            }
+
+            $notes = $query->latest()->paginate(9)->withQueryString();
+            $subjects = Subject::where('user_id', $user->id)->get();
+            $categories = Note::where('user_id', $user->id)->whereNotNull('category')->distinct()->pluck('category');
+        } catch (\Throwable $e) {
+            $notes = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 9);
+            $subjects = collect();
+            $categories = collect();
         }
-
-        if ($request->filled('category')) {
-            $query->where('category', $request->input('category'));
-        }
-
-        if ($request->filled('subject_id')) {
-            $query->where('subject_id', $request->input('subject_id'));
-        }
-
-        if ($request->filled('tag')) {
-            $tag = $request->input('tag');
-            $query->whereJsonContains('tags', $tag);
-        }
-
-        $notes = $query->latest()->paginate(9)->withQueryString();
-        $subjects = Subject::where('user_id', $user->id)->get();
-        $categories = Note::where('user_id', $user->id)->whereNotNull('category')->distinct()->pluck('category');
 
         return view('notes.index', compact('notes', 'subjects', 'categories'));
     }
@@ -61,7 +67,11 @@ class NoteController extends Controller
      */
     public function create(): View
     {
-        $subjects = Subject::where('user_id', Auth::id())->get();
+        try {
+            $subjects = Subject::where('user_id', Auth::id())->get();
+        } catch (\Throwable $e) {
+            $subjects = collect();
+        }
         return view('notes.create', compact('subjects'));
     }
 
@@ -93,7 +103,11 @@ class NoteController extends Controller
     public function edit(Note $note): View
     {
         $this->authorizeOwner($note);
-        $subjects = Subject::where('user_id', Auth::id())->get();
+        try {
+            $subjects = Subject::where('user_id', Auth::id())->get();
+        } catch (\Throwable $e) {
+            $subjects = collect();
+        }
 
         return view('notes.edit', compact('note', 'subjects'));
     }

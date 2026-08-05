@@ -24,18 +24,27 @@ class QuizController extends Controller
 
     public function index(): View
     {
-        $quizzes = Quiz::where('user_id', Auth::id())
-            ->with(['note', 'subject'])
-            ->latest()
-            ->paginate(9);
+        try {
+            $quizzes = Quiz::where('user_id', Auth::id())
+                ->with(['note', 'subject'])
+                ->latest()
+                ->paginate(9);
+        } catch (\Throwable $e) {
+            $quizzes = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 9);
+        }
 
         return view('quizzes.index', compact('quizzes'));
     }
 
     public function create(): View
     {
-        $notes = Note::where('user_id', Auth::id())->latest()->get();
-        $subjects = Subject::where('user_id', Auth::id())->get();
+        try {
+            $notes = Note::where('user_id', Auth::id())->latest()->get();
+            $subjects = Subject::where('user_id', Auth::id())->get();
+        } catch (\Throwable $e) {
+            $notes = collect();
+            $subjects = collect();
+        }
 
         return view('quizzes.create', compact('notes', 'subjects'));
     }

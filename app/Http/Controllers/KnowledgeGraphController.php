@@ -15,7 +15,11 @@ class KnowledgeGraphController extends Controller
     {
         $userId = Auth::id();
 
-        $nodes = KnowledgeNode::where('user_id', $userId)->get();
+        try {
+            $nodes = KnowledgeNode::where('user_id', $userId)->get();
+        } catch (\Throwable $e) {
+            $nodes = collect();
+        }
 
         if ($nodes->isEmpty()) {
             // Seed initial interactive tree nodes

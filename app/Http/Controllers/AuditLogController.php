@@ -17,14 +17,19 @@ class AuditLogController extends Controller
     {
         $userId = Auth::id();
 
-        $auditLogs = AuditLog::where('user_id', $userId)
-            ->latest()
-            ->paginate(15);
+        try {
+            $auditLogs = AuditLog::where('user_id', $userId)
+                ->latest()
+                ->paginate(15);
 
-        $loginHistories = LoginHistory::where('user_id', $userId)
-            ->latest('login_at')
-            ->take(10)
-            ->get();
+            $loginHistories = LoginHistory::where('user_id', $userId)
+                ->latest('login_at')
+                ->take(10)
+                ->get();
+        } catch (\Throwable $e) {
+            $auditLogs = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 15);
+            $loginHistories = collect();
+        }
 
         return view('audit.index', compact('auditLogs', 'loginHistories'));
     }

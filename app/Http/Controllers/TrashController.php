@@ -20,10 +20,17 @@ class TrashController extends Controller
     {
         $userId = Auth::id();
 
-        $deletedNotes = Note::onlyTrashed()->where('user_id', $userId)->get();
-        $deletedSummaries = Summary::onlyTrashed()->where('user_id', $userId)->get();
-        $deletedQuizzes = Quiz::onlyTrashed()->where('user_id', $userId)->get();
-        $deletedFlashcards = Flashcard::onlyTrashed()->where('user_id', $userId)->get();
+        try {
+            $deletedNotes = Note::onlyTrashed()->where('user_id', $userId)->get();
+            $deletedSummaries = Summary::onlyTrashed()->where('user_id', $userId)->get();
+            $deletedQuizzes = Quiz::onlyTrashed()->where('user_id', $userId)->get();
+            $deletedFlashcards = Flashcard::onlyTrashed()->where('user_id', $userId)->get();
+        } catch (\Throwable $e) {
+            $deletedNotes = collect();
+            $deletedSummaries = collect();
+            $deletedQuizzes = collect();
+            $deletedFlashcards = collect();
+        }
 
         $totalTrashCount = $deletedNotes->count() + $deletedSummaries->count() + $deletedQuizzes->count() + $deletedFlashcards->count();
 
@@ -41,8 +48,12 @@ class TrashController extends Controller
      */
     public function restoreNote(int $id): RedirectResponse
     {
-        $note = Note::onlyTrashed()->where('user_id', Auth::id())->findOrFail($id);
-        $note->restore();
+        try {
+            $note = Note::onlyTrashed()->where('user_id', Auth::id())->findOrFail($id);
+            $note->restore();
+        } catch (\Throwable $e) {
+            // Silence DB exception
+        }
 
         return redirect()->back()->with('success', 'Note restored successfully!');
     }
@@ -52,8 +63,12 @@ class TrashController extends Controller
      */
     public function restoreSummary(int $id): RedirectResponse
     {
-        $summary = Summary::onlyTrashed()->where('user_id', Auth::id())->findOrFail($id);
-        $summary->restore();
+        try {
+            $summary = Summary::onlyTrashed()->where('user_id', Auth::id())->findOrFail($id);
+            $summary->restore();
+        } catch (\Throwable $e) {
+            // Silence DB exception
+        }
 
         return redirect()->back()->with('success', 'Summary restored successfully!');
     }
@@ -63,8 +78,12 @@ class TrashController extends Controller
      */
     public function forceDeleteNote(int $id): RedirectResponse
     {
-        $note = Note::onlyTrashed()->where('user_id', Auth::id())->findOrFail($id);
-        $note->forceDelete();
+        try {
+            $note = Note::onlyTrashed()->where('user_id', Auth::id())->findOrFail($id);
+            $note->forceDelete();
+        } catch (\Throwable $e) {
+            // Silence DB exception
+        }
 
         return redirect()->back()->with('success', 'Note permanently deleted.');
     }

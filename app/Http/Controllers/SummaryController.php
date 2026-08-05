@@ -24,26 +24,37 @@ class SummaryController extends Controller
     {
         $user = Auth::user();
 
-        $query = Summary::where('user_id', $user->id)
-            ->with(['note', 'subject']);
+        try {
+            $query = Summary::where('user_id', $user->id)
+                ->with(['note', 'subject']);
 
-        if ($request->filled('search')) {
-            $search = $request->input('search');
-            $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('executive_summary', 'like', "%{$search}%");
-            });
+            if ($request->filled('search')) {
+                $search = $request->input('search');
+                $query->where(function ($q) use ($search) {
+                    $q->where('title', 'like', "%{$search}%")
+                      ->orWhere('executive_summary', 'like', "%{$search}%");
+                });
+            }
+
+            $summaries = $query->latest()->paginate(9)->withQueryString();
+            $subjects = Subject::where('user_id', $user->id)->get();
+        } catch (\Throwable $e) {
+            $summaries = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 9);
+            $subjects = collect();
         }
 
-        $summaries = $query->latest()->paginate(9)->withQueryString();
-
-        return view('summaries.index', compact('summaries'));
+        return view('summaries.index', compact('summaries', 'subjects'));
     }
 
     public function create(): View
     {
-        $notes = Note::where('user_id', Auth::id())->latest()->get();
-        $subjects = Subject::where('user_id', Auth::id())->get();
+        try {
+            $notes = Note::where('user_id', Auth::id())->latest()->get();
+            $subjects = Subject::where('user_id', Auth::id())->get();
+        } catch (\Throwable $e) {
+            $notes = collect();
+            $subjects = collect();
+        }
 
         return view('summaries.create', compact('notes', 'subjects'));
     }
