@@ -2,7 +2,7 @@ FROM richarvey/nginx-php-fpm:3.1.6
 
 WORKDIR /var/www/html
 
-# Set Webroot to Laravel's public directory and enable Laravel Nginx routing rules
+# Set Webroot to Laravel's public directory and enable Laravel Nginx routing & scripts
 ENV WEBROOT=/var/www/html/public
 ENV LARAVEL=true
 ENV LERAVEL=true
@@ -13,7 +13,7 @@ ENV RUN_SCRIPTS=1
 # Copy application
 COPY . /var/www/html
 
-# Copy custom Nginx configuration to override default site config
+# Copy custom Nginx configuration
 COPY conf/nginx-laravel.conf /etc/nginx/sites-available/default.conf
 COPY conf/nginx-laravel.conf /etc/nginx/sites-enabled/default.conf
 
@@ -26,7 +26,7 @@ RUN composer install \
     --optimize-autoloader \
     --no-interaction
 
-# Explicitly create Laravel storage & cache subdirectories
+# Create storage and bootstrap/cache directories with full permissions
 RUN mkdir -p storage/framework/cache/data \
     && mkdir -p storage/framework/sessions \
     && mkdir -p storage/framework/views \
@@ -35,21 +35,7 @@ RUN mkdir -p storage/framework/cache/data \
     && chmod -R 777 storage bootstrap/cache \
     && chown -R nginx:nginx storage bootstrap/cache 2>/dev/null || true
 
-# Storage link
-RUN php artisan storage:link || true
-
-# Clear caches
-RUN php artisan config:clear || true \
- && php artisan cache:clear || true \
- && php artisan route:clear || true \
- && php artisan view:clear || true
-
-# Cache for production
-RUN php artisan config:cache || true \
- && php artisan route:cache || true \
- && php artisan view:cache || true
-
-# Health endpoint
-RUN echo "OK" > /var/www/html/public/health
+# Make startup scripts executable
+RUN chmod +x /var/www/html/scripts/*.sh 2>/dev/null || true
 
 EXPOSE 80
